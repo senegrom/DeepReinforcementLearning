@@ -8,7 +8,7 @@ LOGGER_DISABLED = {
     'main': False
     , 'memory': False
     , 'tourney': False
-    , 'mcts': False
+    , 'mcts': True
     , 'model': False}
 
 logger_mcts = setup_logger('logger_mcts', run_folder + 'logs/logger_mcts.log')

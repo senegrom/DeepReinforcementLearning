@@ -108,4 +108,5 @@ run_archive/
 code_archive/
 games/archive/
 *.pyc
-.idea/
+.idea/*
+.ipynb_checkpoints/*

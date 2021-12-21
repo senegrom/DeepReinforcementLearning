@@ -68,7 +68,7 @@ else:
 
 # copy the config file to the run folder
 copyfile('./config.py', run_folder + 'config.py')
-plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes=True)
+# plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes=True)
 
 print('\n')
 
@@ -98,7 +98,7 @@ while 1:
 
     memory.clear_stmemory()
 
-    if len(memory.ltmemory) >= config.MEMORY_SIZE:
+    if len(memory.ltmemory) >= 1000:
 
         ######## RETRAINING ########
         print('RETRAINING...')

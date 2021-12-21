@@ -13,6 +13,9 @@ import loggers as lg
 from loss import softmax_cross_entropy_with_logits
 from settings import run_folder, run_archive_folder
 
+tf.config.threading.set_inter_op_parallelism_threads(0)
+tf.config.threading.set_intra_op_parallelism_threads(0)
+
 
 class Gen_Model():
     def __init__(self, reg_const, learning_rate, input_dim, output_dim):
@@ -233,7 +236,7 @@ class Residual_CNN(Gen_Model):
 
         model = Model(inputs=[main_input], outputs=[vh, ph])
         model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': softmax_cross_entropy_with_logits},
-                      optimizer=SGD(lr=self.learning_rate, momentum=config.MOMENTUM),
+                      optimizer=SGD(learning_rate=self.learning_rate, momentum=config.MOMENTUM),
                       loss_weights={'value_head': 0.5, 'policy_head': 0.5}
                       )
 
