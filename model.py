@@ -2,8 +2,9 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras import regularizers
-from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add
+from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, Add
 from tensorflow.keras.models import load_model, Model
 from tensorflow.keras.optimizers import SGD
 
@@ -19,6 +20,7 @@ class Gen_Model():
         self.learning_rate = learning_rate
         self.input_dim = input_dim
         self.output_dim = output_dim
+        self.model = None
 
     def predict(self, x):
         return self.model.predict(x)
@@ -115,56 +117,57 @@ class Residual_CNN(Gen_Model):
 
         x = self.conv_layer(input_block, filters, kernel_size)
 
+        x = tf.transpose(x, [0, 2, 3, 1])
         x = Conv2D(
             filters=filters
             , kernel_size=kernel_size
-            , data_format="channels_first"
+            , data_format="channels_last"
             , padding='same'
             , use_bias=False
             , activation='linear'
             , kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
-
+        x = tf.transpose(x, [0, 3, 1, 2])
         x = BatchNormalization(axis=1)(x)
-
-        x = add([input_block, x])
-
+        x = Add()([input_block, x])
         x = LeakyReLU()(x)
 
-        return (x)
+        return x
 
     def conv_layer(self, x, filters, kernel_size):
 
+        x = tf.transpose(x, [0, 2, 3, 1])
         x = Conv2D(
             filters=filters
             , kernel_size=kernel_size
-            , data_format="channels_first"
+            , data_format="channels_last"
             , padding='same'
             , use_bias=False
             , activation='linear'
             , kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
-
+        x = tf.transpose(x, [0, 3, 1, 2])
         x = BatchNormalization(axis=1)(x)
         x = LeakyReLU()(x)
 
-        return (x)
+        return x
 
     def value_head(self, x):
 
+        x = tf.transpose(x, [0, 2, 3, 1])
         x = Conv2D(
             filters=1
             , kernel_size=(1, 1)
-            , data_format="channels_first"
+            , data_format="channels_last"
             , padding='same'
             , use_bias=False
             , activation='linear'
             , kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
+        x = tf.transpose(x, [0, 3, 1, 2])
 
         x = BatchNormalization(axis=1)(x)
         x = LeakyReLU()(x)
-
         x = Flatten()(x)
 
         x = Dense(
@@ -188,15 +191,17 @@ class Residual_CNN(Gen_Model):
 
     def policy_head(self, x):
 
+        x = tf.transpose(x, [0, 2, 3, 1])
         x = Conv2D(
             filters=2
             , kernel_size=(1, 1)
-            , data_format="channels_first"
+            , data_format="channels_last"
             , padding='same'
             , use_bias=False
             , activation='linear'
             , kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
+        x = tf.transpose(x, [0, 3, 1, 2])
 
         x = BatchNormalization(axis=1)(x)
         x = LeakyReLU()(x)
@@ -211,7 +216,7 @@ class Residual_CNN(Gen_Model):
             , name='policy_head'
         )(x)
 
-        return (x)
+        return x
 
     def _build_model(self):
 
