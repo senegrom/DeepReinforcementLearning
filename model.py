@@ -1,8 +1,11 @@
 # %matplotlib inline
 
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import tensorflow.keras.layers
 from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, Add
 from tensorflow.keras.models import load_model, Model
@@ -17,15 +20,15 @@ tf.config.threading.set_inter_op_parallelism_threads(0)
 tf.config.threading.set_intra_op_parallelism_threads(0)
 
 
-class Gen_Model():
-    def __init__(self, reg_const, learning_rate, input_dim, output_dim):
-        self.reg_const = reg_const
-        self.learning_rate = learning_rate
-        self.input_dim = input_dim
-        self.output_dim = output_dim
-        self.model = None
+class Gen_Model:
+    def __init__(self, reg_const: float, learning_rate: float, input_dim: tf.shape, output_dim: tf.shape):
+        self.reg_const: float = reg_const
+        self.learning_rate: float = learning_rate
+        self.input_dim: tf.shape = input_dim
+        self.output_dim: tf.shape = output_dim
+        self.model: Optional[Model] = None
 
-    def predict(self, x):
+    def predict(self, x: tf.Tensor):
         return self.model.predict(x)
 
     def fit(self, states, targets, epochs, verbose, validation_split, batch_size):
@@ -33,12 +36,11 @@ class Gen_Model():
                               batch_size=batch_size)
 
     def write(self, game, version):
-        self.model.save(run_folder + 'models/version' + "{0:0>4}".format(version) + '.h5')
+        self.model.save(f"{run_folder}/models/version{version:0>4}.h5")
 
     def read(self, game, run_number, version):
         return load_model(
-            run_archive_folder + game + '/run' + str(run_number).zfill(4) + "/models/version" + "{0:0>4}".format(
-                version) + '.h5',
+            f"{run_archive_folder}/{game}/models/version{version:0>4}.h5",
             custom_objects={'softmax_cross_entropy_with_logits': softmax_cross_entropy_with_logits})
 
     def printWeightAverages(self):
@@ -116,11 +118,10 @@ class Residual_CNN(Gen_Model):
         self.num_layers = len(hidden_layers)
         self.model = self._build_model()
 
-    def residual_layer(self, input_block, filters, kernel_size):
+    def residual_layer(self, input_block, filters, kernel_size) -> tensorflow.keras.Model:
 
         x = self.conv_layer(input_block, filters, kernel_size)
 
-        x = tf.transpose(x, [0, 2, 3, 1])
         x = Conv2D(
             filters=filters
             , kernel_size=kernel_size
@@ -130,8 +131,7 @@ class Residual_CNN(Gen_Model):
             , activation='linear'
             , kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
-        x = tf.transpose(x, [0, 3, 1, 2])
-        x = BatchNormalization(axis=1)(x)
+        x = BatchNormalization(axis=-1)(x)
         x = Add()([input_block, x])
         x = LeakyReLU()(x)
 
@@ -139,7 +139,6 @@ class Residual_CNN(Gen_Model):
 
     def conv_layer(self, x, filters, kernel_size):
 
-        x = tf.transpose(x, [0, 2, 3, 1])
         x = Conv2D(
             filters=filters
             , kernel_size=kernel_size
@@ -149,15 +148,13 @@ class Residual_CNN(Gen_Model):
             , activation='linear'
             , kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
-        x = tf.transpose(x, [0, 3, 1, 2])
-        x = BatchNormalization(axis=1)(x)
+        x = BatchNormalization(axis=-1)(x)
         x = LeakyReLU()(x)
 
         return x
 
     def value_head(self, x):
 
-        x = tf.transpose(x, [0, 2, 3, 1])
         x = Conv2D(
             filters=1
             , kernel_size=(1, 1)
@@ -167,9 +164,7 @@ class Residual_CNN(Gen_Model):
             , activation='linear'
             , kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
-        x = tf.transpose(x, [0, 3, 1, 2])
-
-        x = BatchNormalization(axis=1)(x)
+        x = BatchNormalization(axis=-1)(x)
         x = LeakyReLU()(x)
         x = Flatten()(x)
 
@@ -181,7 +176,6 @@ class Residual_CNN(Gen_Model):
         )(x)
 
         x = LeakyReLU()(x)
-
         x = Dense(
             1
             , use_bias=False
@@ -189,12 +183,9 @@ class Residual_CNN(Gen_Model):
             , kernel_regularizer=regularizers.l2(self.reg_const)
             , name='value_head'
         )(x)
-
-        return (x)
+        return x
 
     def policy_head(self, x):
-
-        x = tf.transpose(x, [0, 2, 3, 1])
         x = Conv2D(
             filters=2
             , kernel_size=(1, 1)
@@ -204,11 +195,8 @@ class Residual_CNN(Gen_Model):
             , activation='linear'
             , kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
-        x = tf.transpose(x, [0, 3, 1, 2])
-
-        x = BatchNormalization(axis=1)(x)
+        x = BatchNormalization(axis=-1)(x)
         x = LeakyReLU()(x)
-
         x = Flatten()(x)
 
         x = Dense(
@@ -225,7 +213,8 @@ class Residual_CNN(Gen_Model):
 
         main_input = Input(shape=self.input_dim, name='main_input')
 
-        x = self.conv_layer(main_input, self.hidden_layers[0]['filters'], self.hidden_layers[0]['kernel_size'])
+        x = tf.transpose(main_input, [0, 2, 3, 1])
+        x = self.conv_layer(x, self.hidden_layers[0]['filters'], self.hidden_layers[0]['kernel_size'])
 
         if len(self.hidden_layers) > 1:
             for h in self.hidden_layers[1:]:
@@ -243,6 +232,6 @@ class Residual_CNN(Gen_Model):
         return model
 
     def convertToModelInput(self, state):
-        inputToModel = state.binary  # np.append(state.binary, [(state.playerTurn + 1)/2] * self.input_dim[1] * self.input_dim[2])
-        inputToModel = np.reshape(inputToModel, self.input_dim)
-        return (inputToModel)
+        input_to_model = state.binary
+        input_to_model = np.reshape(input_to_model, self.input_dim)
+        return input_to_model

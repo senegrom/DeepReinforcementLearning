@@ -6,7 +6,7 @@ from utils import setup_logger
 
 LOGGER_DISABLED = {
     'main': False
-    , 'memory': False
+    , 'memory': True
     , 'tourney': False
     , 'mcts': True
     , 'model': False}
