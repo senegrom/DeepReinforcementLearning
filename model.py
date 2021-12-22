@@ -13,11 +13,8 @@ from tensorflow.keras.optimizers import SGD
 
 import config
 import loggers as lg
-from loss import softmax_cross_entropy_with_logits
 from initialise import run_folder, run_archive_folder
-
-tf.config.threading.set_inter_op_parallelism_threads(0)
-tf.config.threading.set_intra_op_parallelism_threads(0)
+from loss import softmax_cross_entropy_with_logits
 
 
 # noinspection PyPep8Naming
@@ -234,5 +231,5 @@ class Residual_CNN(Gen_Model):
 
     def convertToModelInput(self, state):
         input_to_model = state.binary
-        input_to_model = np.reshape(input_to_model, self.input_dim)
+        input_to_model = tf.reshape(input_to_model, self.input_dim)
         return input_to_model
