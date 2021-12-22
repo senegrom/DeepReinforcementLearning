@@ -16,7 +16,7 @@ from funcs import play_matches
 
 import loggers as lg
 
-from settings import run_folder, run_archive_folder
+from initialise import run_folder, run_archive_folder
 import initialise
 import pickle
 import config

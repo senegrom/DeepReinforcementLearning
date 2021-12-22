@@ -1,4 +1,4 @@
-from settings import run_folder
+from initialise import run_folder
 from utils import setup_logger
 
 # SET all LOGGER_DISABLED to True to disable logging

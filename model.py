@@ -14,7 +14,7 @@ from tensorflow.keras.optimizers import SGD
 import config
 import loggers as lg
 from loss import softmax_cross_entropy_with_logits
-from settings import run_folder, run_archive_folder
+from initialise import run_folder, run_archive_folder
 
 tf.config.threading.set_inter_op_parallelism_threads(0)
 tf.config.threading.set_intra_op_parallelism_threads(0)
