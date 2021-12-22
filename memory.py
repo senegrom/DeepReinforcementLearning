@@ -4,19 +4,19 @@ import config
 
 
 class Memory:
-    def __init__(self, MEMORY_SIZE):
+    def __init__(self):
         self.MEMORY_SIZE = config.MEMORY_SIZE
         self.ltmemory = deque(maxlen=config.MEMORY_SIZE)
         self.stmemory = deque(maxlen=config.MEMORY_SIZE)
 
-    def commit_stmemory(self, identities, state, actionValues):
-        for r in identities(state, actionValues):
+    def commit_stmemory(self, identities, state, action_values):
+        for r in identities(state, action_values):
             self.stmemory.append({
                 'board': r[0].board
                 , 'state': r[0]
                 , 'id': r[0].id
                 , 'AV': r[1]
-                , 'playerTurn': r[0].playerTurn
+                , 'playerTurn': r[0].player_turn
             })
 
     def commit_ltmemory(self):
