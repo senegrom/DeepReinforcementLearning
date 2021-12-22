@@ -1,8 +1,8 @@
 from settings import run_folder
 from utils import setup_logger
 
-### SET all LOGGER_DISABLED to True to disable logging
-### WARNING: the mcts log file gets big quite quickly
+# SET all LOGGER_DISABLED to True to disable logging
+# WARNING: the mcts log file gets big quite quickly
 
 LOGGER_DISABLED = {
     'main': False

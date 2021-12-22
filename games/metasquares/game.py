@@ -37,11 +37,11 @@ class Game:
 
         for _ in range(5):
             current_board = np.array([
-                current_board[20], current_board[15], current_board[10], current_board[5], current_board[0]
-                , current_board[21], current_board[16], current_board[11], current_board[6], current_board[1]
-                , current_board[22], current_board[17], current_board[12], current_board[7], current_board[2]
-                , current_board[23], current_board[18], current_board[13], current_board[8], current_board[3]
-                , current_board[24], current_board[19], current_board[14], current_board[9], current_board[4]
+                current_board[20], current_board[15], current_board[10], current_board[5], current_board[0],
+                current_board[21], current_board[16], current_board[11], current_board[6], current_board[1],
+                current_board[22], current_board[17], current_board[12], current_board[7], current_board[2],
+                current_board[23], current_board[18], current_board[13], current_board[8], current_board[3],
+                current_board[24], current_board[19], current_board[14], current_board[9], current_board[4]
             ])
 
             current_av = np.array([
@@ -56,37 +56,37 @@ class Game:
             identities.append((GameState(current_board, state.player_turn), current_av))
 
         current_board = np.array([
-            current_board[4], current_board[3], current_board[2], current_board[1], current_board[0]
-            , current_board[9], current_board[8], current_board[7], current_board[6], current_board[5]
-            , current_board[14], current_board[13], current_board[12], current_board[11], current_board[10]
-            , current_board[19], current_board[18], current_board[17], current_board[16], current_board[15]
-            , current_board[24], current_board[23], current_board[22], current_board[21], current_board[20]
+            current_board[4], current_board[3], current_board[2], current_board[1], current_board[0],
+            current_board[9], current_board[8], current_board[7], current_board[6], current_board[5],
+            current_board[14], current_board[13], current_board[12], current_board[11], current_board[10],
+            current_board[19], current_board[18], current_board[17], current_board[16], current_board[15],
+            current_board[24], current_board[23], current_board[22], current_board[21], current_board[20]
         ])
 
         current_av = np.array([
-            current_av[4], current_av[3], current_av[2], current_av[1], current_av[0]
-            , current_av[9], current_av[8], current_av[7], current_av[6], current_av[5]
-            , current_av[14], current_av[13], current_av[12], current_av[11], current_av[10]
-            , current_av[19], current_av[18], current_av[17], current_av[16], current_av[15]
-            , current_av[24], current_av[23], current_av[22], current_av[21], current_av[20]
+            current_av[4], current_av[3], current_av[2], current_av[1], current_av[0],
+            current_av[9], current_av[8], current_av[7], current_av[6], current_av[5],
+            current_av[14], current_av[13], current_av[12], current_av[11], current_av[10],
+            current_av[19], current_av[18], current_av[17], current_av[16], current_av[15],
+            current_av[24], current_av[23], current_av[22], current_av[21], current_av[20]
 
         ])
 
         for _ in range(5):
             current_board = np.array([
-                current_board[20], current_board[15], current_board[10], current_board[5], current_board[0]
-                , current_board[21], current_board[16], current_board[11], current_board[6], current_board[1]
-                , current_board[22], current_board[17], current_board[12], current_board[7], current_board[2]
-                , current_board[23], current_board[18], current_board[13], current_board[8], current_board[3]
-                , current_board[24], current_board[19], current_board[14], current_board[9], current_board[4]
+                current_board[20], current_board[15], current_board[10], current_board[5], current_board[0],
+                current_board[21], current_board[16], current_board[11], current_board[6], current_board[1],
+                current_board[22], current_board[17], current_board[12], current_board[7], current_board[2],
+                current_board[23], current_board[18], current_board[13], current_board[8], current_board[3],
+                current_board[24], current_board[19], current_board[14], current_board[9], current_board[4]
             ])
 
             current_av = np.array([
-                current_av[20], current_av[15], current_av[10], current_av[5], current_av[0]
-                , current_av[21], current_av[16], current_av[11], current_av[6], current_av[1]
-                , current_av[22], current_av[17], current_av[12], current_av[7], current_av[2]
-                , current_av[23], current_av[18], current_av[13], current_av[8], current_av[3]
-                , current_av[24], current_av[19], current_av[14], current_av[9], current_av[4]
+                current_av[20], current_av[15], current_av[10], current_av[5], current_av[0],
+                current_av[21], current_av[16], current_av[11], current_av[6], current_av[1],
+                current_av[22], current_av[17], current_av[12], current_av[7], current_av[2],
+                current_av[23], current_av[18], current_av[13], current_av[8], current_av[3],
+                current_av[24], current_av[19], current_av[14], current_av[9], current_av[4]
 
             ])
 
@@ -236,11 +236,11 @@ class GameState:
                     opponent_player_points = opponent_player_points + points
 
         if current_player_points > opponent_player_points:
-            return (1, current_player_points, opponent_player_points)
+            return 1, current_player_points, opponent_player_points
         elif current_player_points < opponent_player_points:
-            return (-1, current_player_points, opponent_player_points)
+            return -1, current_player_points, opponent_player_points
         else:
-            return (0, current_player_points, opponent_player_points)
+            return 0, current_player_points, opponent_player_points
 
     def _get_score(self):
         tmp = self.value

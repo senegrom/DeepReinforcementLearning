@@ -15,10 +15,13 @@ class AbstractAgent(ABC):
     def act(self, state, tau):
         pass
 
+    def __init__(self, name):
+        self.name: str = name
+
 
 class User(AbstractAgent):
     def __init__(self, name, state_size, action_size):
-        self.name = name
+        super().__init__(name)
         self.state_size = state_size
         self.action_size = action_size
 
@@ -33,8 +36,7 @@ class User(AbstractAgent):
 
 class Agent(AbstractAgent):
     def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model):
-        self.name = name
-
+        super().__init__(name)
         self.state_size = state_size
         self.action_size = action_size
 

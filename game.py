@@ -41,32 +41,24 @@ class Game:
 
         current_board = np.array([
             current_board[6], current_board[5], current_board[4], current_board[3], current_board[2], current_board[1],
-            current_board[0]
-            , current_board[13], current_board[12], current_board[11], current_board[10], current_board[9],
-            current_board[8],
-            current_board[7]
-            , current_board[20], current_board[19], current_board[18], current_board[17], current_board[16],
-            current_board[15], current_board[14]
-            , current_board[27], current_board[26], current_board[25], current_board[24], current_board[23],
-            current_board[22], current_board[21]
-            , current_board[34], current_board[33], current_board[32], current_board[31], current_board[30],
-            current_board[29], current_board[28]
-            , current_board[41], current_board[40], current_board[39], current_board[38], current_board[37],
-            current_board[36], current_board[35]
+            current_board[0], current_board[13], current_board[12], current_board[11], current_board[10],
+            current_board[9], current_board[8], current_board[7], current_board[20], current_board[19],
+            current_board[18], current_board[17], current_board[16], current_board[15], current_board[14],
+            current_board[27], current_board[26], current_board[25], current_board[24], current_board[23],
+            current_board[22], current_board[21], current_board[34], current_board[33], current_board[32],
+            current_board[31], current_board[30], current_board[29], current_board[28], current_board[41],
+            current_board[40], current_board[39], current_board[38], current_board[37], current_board[36],
+            current_board[35]
         ])
 
         current_av = np.array([
-            current_av[6], current_av[5], current_av[4], current_av[3], current_av[2], current_av[1], current_av[0]
-            , current_av[13], current_av[12], current_av[11], current_av[10], current_av[9], current_av[8],
-            current_av[7]
-            , current_av[20], current_av[19], current_av[18], current_av[17], current_av[16], current_av[15],
-            current_av[14]
-            , current_av[27], current_av[26], current_av[25], current_av[24], current_av[23], current_av[22],
-            current_av[21]
-            , current_av[34], current_av[33], current_av[32], current_av[31], current_av[30], current_av[29],
-            current_av[28]
-            , current_av[41], current_av[40], current_av[39], current_av[38], current_av[37], current_av[36],
-            current_av[35]
+            current_av[6], current_av[5], current_av[4], current_av[3], current_av[2], current_av[1], current_av[0],
+            current_av[13], current_av[12], current_av[11], current_av[10], current_av[9], current_av[8], current_av[7],
+            current_av[20], current_av[19], current_av[18], current_av[17], current_av[16], current_av[15],
+            current_av[14], current_av[27], current_av[26], current_av[25], current_av[24], current_av[23],
+            current_av[22], current_av[21], current_av[34], current_av[33], current_av[32], current_av[31],
+            current_av[30], current_av[29], current_av[28], current_av[41], current_av[40], current_av[39],
+            current_av[38], current_av[37], current_av[36], current_av[35]
         ])
 
         identities.append((GameState(current_board, state.player_turn), current_av))
@@ -202,7 +194,7 @@ class GameState:
             return 1
 
         for x, y, z, a in self.winners:
-            if (self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.player_turn):
+            if self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.player_turn:
                 return 1
         return 0
 
@@ -210,7 +202,7 @@ class GameState:
         # This is the value of the state for the current player
         # i.e. if the previous player played a winning move, you lose
         for x, y, z, a in self.winners:
-            if (self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.player_turn):
+            if self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.player_turn:
                 return -1, -1, 1
         return 0, 0, 0
 

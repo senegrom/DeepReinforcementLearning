@@ -27,7 +27,7 @@ lg.logger_main.info('=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*')
 
 env = Game()
 
-######## LOAD MEMORIES IF NECESSARY ########
+## LOAD MEMORIES IF NECESSARY ##
 
 if initialise.INITIAL_MEMORY_VERSION == None:
     memory = Memory()
@@ -36,7 +36,7 @@ else:
     with open(f"{run_archive_folder}/{env.name}/memory/memory{initialise.INITIAL_MEMORY_VERSION:0>4}.p", "rb") as f:
         memory = pickle.load(f)
 
-######## LOAD MODEL IF NECESSARY ########
+## LOAD MODEL IF NECESSARY ##
 
 # create an untrained neural network objects from the config file
 current_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (2,) + env.grid_shape, env.action_size,
@@ -51,7 +51,7 @@ if initialise.INITIAL_MODEL_VERSION != None:
     m_tmp = best_NN.read(env.name, initialise.INITIAL_RUN_NUMBER, best_player_version)
     current_NN.model.set_weights(m_tmp.get_weights())
     best_NN.model.set_weights(m_tmp.get_weights())
-# otherwise just ensure the weights on the two players are the same
+# otherwise, just ensure the weights on the two players are the same
 else:
     best_player_version = 0
     best_NN.model.set_weights(current_NN.model.get_weights())
@@ -62,7 +62,7 @@ copyfile('./config.py', run_folder + 'config.py')
 
 print('\n')
 
-######## CREATE THE PLAYERS ########
+# CREATE THE PLAYERS ##
 
 current_player = Agent('current_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, current_NN)
 best_player = Agent('best_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_NN)
@@ -79,7 +79,7 @@ while 1:
     lg.logger_main.info('BEST PLAYER VERSION: %d', best_player_version)
     print('BEST PLAYER VERSION ' + str(best_player_version))
 
-    ######## SELF PLAY ########
+    ## SELF PLAY ##
     print('SELF PLAYING ' + str(config.EPISODES) + ' EPISODES...')
     _, memory, _, _ = play_matches(best_player, best_player, config.EPISODES, lg.logger_main,
                                    turns_until_tau0=config.TURNS_UNTIL_TAU0, memory=memory)
@@ -92,14 +92,15 @@ while 1:
 
     if len(memory.ltmemory) >= 1000:
 
-        ######## RETRAINING ########
+        ## RETRAINING ##
         print('RETRAINING...')
         current_player.replay(memory.ltmemory)
         print('')
 
-        ######## TOURNAMENT ########
+        ## TOURNAMENT ##
         print('TOURNAMENT...')
-        scores, _, points, sp_scores = play_matches(best_player, current_player, config.EVAL_EPISODES, lg.logger_tourney,
+        scores, _, points, sp_scores = play_matches(best_player, current_player, config.EVAL_EPISODES,
+                                                    lg.logger_tourney,
                                                     turns_until_tau0=0, memory=None)
         print('\nSCORES')
         print(scores)

@@ -40,7 +40,7 @@ def play_matches_between_versions(env, run_version: int, player1version: int, pl
     return scores, memory, points, sp_scores
 
 
-def play_matches(player1: Agent, player2: Agent, n_episodes: int, logger, turns_until_tau0: int, memory=None,
+def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int, logger, turns_until_tau0: int, memory=None,
                  goes_first=0):
     env = Game()
     scores = {player1.name: 0, "drawn": 0, player2.name: 0}
