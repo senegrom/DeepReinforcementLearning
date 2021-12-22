@@ -5,9 +5,9 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-import MCTS as mc
+import MCTS
 import config
-import loggers as lg
+from game import GameState
 
 
 class AbstractAgent(ABC):
@@ -25,8 +25,9 @@ class User(AbstractAgent):
         self.state_size = state_size
         self.action_size = action_size
 
-    def act(self, state, tau):
-        action = input('Enter your chosen action: ')
+    def act(self, state: GameState, tau):
+        print(state.render(None))
+        action = int(input('Enter your chosen action: '))
         pi = np.zeros(self.action_size)
         pi[action] = 1
         value = None
@@ -55,11 +56,8 @@ class Agent(AbstractAgent):
         self.val_policy_loss = []
 
     def simulate(self):
-        self.mcts.root.state.render(lg.logger_mcts)
-
         # MOVE THE LEAF NODE
         leaf, value, done, breadcrumbs = self.mcts.move_to_leaf()
-        # leaf.state.render(lg.logger_mcts)
 
         # EVALUATE THE LEAF NODE
         value, breadcrumbs = self.evaluate_leaf(leaf, value, done, breadcrumbs)
@@ -113,29 +111,21 @@ class Agent(AbstractAgent):
 
     def evaluate_leaf(self, leaf, value, done, breadcrumbs):
 
-        # lg.logger_mcts.info('------EVALUATING LEAF------')
-
         if done == 0:
             value, probs, allowed_actions = self.get_preds(leaf.state)
-            # lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
             probs = probs[allowed_actions]
 
             for idx, action in enumerate(allowed_actions):
                 new_state, _, _ = leaf.state.take_action(action)
                 if new_state.id not in self.mcts.tree:
-                    node = mc.Node(new_state)
+                    node = MCTS.Node(new_state)
                     self.mcts.add_node(node)
-                    # lg.logger_mcts.info('added node...%s...p = %f', node.id, probs[idx])
                 else:
                     node = self.mcts.tree[new_state.id]
-                    # lg.logger_mcts.info('existing node...%s...', node.id)
 
-                new_edge = mc.Edge(leaf, node, probs[idx], action)
+                new_edge = MCTS.Edge(leaf, node, probs[idx], action)
                 leaf.edges.append((action, new_edge))
-
-        # else:
-        # lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, value)
 
         return value, breadcrumbs
 
@@ -188,7 +178,7 @@ class Agent(AbstractAgent):
         return preds
 
     def build_mcts(self, state):
-        self.mcts = mc.MCTS(mc.Node(state), self.cpuct)
+        self.mcts = MCTS.MCTS(MCTS.Node(state), self.cpuct)
 
     def change_root_mcts(self, state):
         self.mcts.root = self.mcts.tree[state.id]

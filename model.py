@@ -36,10 +36,11 @@ class Gen_Model:
         return self.model.fit(states, targets, epochs=epochs, verbose=verbose, validation_split=validation_split,
                               batch_size=batch_size)
 
-    def write(self, game, version):
+    def write(self, _, version):
         self.model.save(f"{run_folder}/models/version{version:0>4}.h5")
 
-    def read(self, game, run_number, version):
+    @staticmethod
+    def read(game, version):
         return load_model(
             f"{run_archive_folder}/{game}/models/version{version:0>4}.h5",
             custom_objects={'softmax_cross_entropy_with_logits': softmax_cross_entropy_with_logits})
@@ -82,9 +83,7 @@ class Gen_Model:
                     channel = (channel + 1) % s[2]
                     filter_ = (filter_ + 1) % s[3]
 
-
             except Exception:
-
                 try:
                     fig = plt.figure(figsize=(3, len(x)))  # width, height in inches
                     for j in range(len(x)):
@@ -93,7 +92,6 @@ class Gen_Model:
                         sub.imshow([x[i]], cmap='coolwarm', clim=clim, aspect="auto")
 
                     plt.show()
-
 
                 except Exception:
                     try:

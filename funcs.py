@@ -8,7 +8,7 @@ from game import Game
 from model import Residual_CNN
 
 
-def play_matches_between_versions(env, run_version: int, player1version: int, player2version: int, n_episodes: int,
+def play_matches_between_versions(env, player1version: int, player2version: int, n_episodes: int,
                                   logger, turns_until_tau0: int, goes_first=0):
     player1: AbstractAgent
     player2: AbstractAgent
@@ -19,7 +19,7 @@ def play_matches_between_versions(env, run_version: int, player1version: int, pl
                                   config.HIDDEN_CNN_LAYERS)
 
         if player1version > 0:
-            player1_network = player1_nn.read(env.name, run_version, player1version)
+            player1_network = player1_nn.read(env.name, player1version)
             player1_nn.model.set_weights(player1_network.get_weights())
         player1 = Agent('player1', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, player1_nn)
 
@@ -30,7 +30,7 @@ def play_matches_between_versions(env, run_version: int, player1version: int, pl
                                   config.HIDDEN_CNN_LAYERS)
 
         if player2version > 0:
-            player2_network = player2_nn.read(env.name, run_version, player2version)
+            player2_network = player2_nn.read(env.name, player2version)
             player2_nn.model.set_weights(player2_network.get_weights())
         player2 = Agent('player2', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, player2_nn)
 
@@ -40,8 +40,8 @@ def play_matches_between_versions(env, run_version: int, player1version: int, pl
     return scores, memory, points, sp_scores
 
 
-def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int, logger, turns_until_tau0: int, memory=None,
-                 goes_first=0):
+def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int, logger, turns_until_tau0: int,
+                 memory=None, goes_first=0):
     env = Game()
     scores = {player1.name: 0, "drawn": 0, player2.name: 0}
     sp_scores = {'sp': 0, "drawn": 0, 'nsp': 0}

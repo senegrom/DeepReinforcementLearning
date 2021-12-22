@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 
 
@@ -225,7 +227,14 @@ class GameState:
 
         return new_state, value, done
 
-    def render(self, logger):
+    def render(self, logger) -> Optional[str]:
+        if logger is not None:
+            for r in range(6):
+                logger.info([self.pieces[str(x)] for x in self.board[7 * r: (7 * r + 7)]])
+            logger.info('--------------')
+            return None
+        s = []
         for r in range(6):
-            logger.info([self.pieces[str(x)] for x in self.board[7 * r: (7 * r + 7)]])
-        logger.info('--------------')
+            s.append(f"{[self.pieces[str(x)] for x in self.board[7 * r: (7 * r + 7)]]}\n")
+        s.append('--------------\n')
+        return "".join(s)

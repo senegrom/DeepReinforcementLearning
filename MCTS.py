@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 
 import config
@@ -19,11 +21,11 @@ class Node:
 
 
 class Edge:
-    def __init__(self, in_node, out_node, prior, action, turn=in_node.state.player_turn):
-        self.id = in_node.state.id + '|' + out_node.state.id
-        self.in_node = in_node
-        self.out_node = out_node
-        self.player_turn = turn
+    def __init__(self, in_node: Node, out_node: Node, prior: float, action):
+        self.id: str = in_node.state.id + '|' + out_node.state.id
+        self.in_node: Node = in_node
+        self.out_node: Node = out_node
+        self.player_turn: int = in_node.state.player_turn
         self.action = action
 
         self.stats = {
@@ -53,11 +55,9 @@ class MCTS:
         done = 0
         value = 0
 
-        while not current_node.isLeaf():
+        while not current_node.is_leaf():
 
-            # lg.logger_mcts.info('PLAYER TURN...%d', current_node.state.playerTurn)
-
-            max_qu = -99999
+            max_qu = float('-inf')
 
             if current_node is self.root:
                 epsilon = config.EPSILON
@@ -70,34 +70,32 @@ class MCTS:
             for action, edge in current_node.edges:
                 nb = nb + edge.stats['N']
 
+            simulation_action = None
+            simulation_edge = None
+
             for idx, (action, edge) in enumerate(current_node.edges):
 
-                U = self.cpuct * \
+                u = self.cpuct * \
                     ((1 - epsilon) * edge.stats['P'] + epsilon * nu[idx]) * \
                     np.sqrt(nb) / (1 + edge.stats['N'])
 
-                Q = edge.stats['Q']
+                q = edge.stats['Q']
 
-                # lg.logger_mcts.info(
-                #     'action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-                #     , action, action % 7, edge.stats['N'], np.round(edge.stats['P'], 6), np.round(nu[idx], 6),
-                #     ((1 - epsilon) * edge.stats['P'] + epsilon * nu[idx])
-                #     , np.round(edge.stats['W'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
-
-                if Q + U > max_qu:
-                    max_qu = Q + U
+                if q + u > max_qu:
+                    max_qu = q + u
                     simulation_action = action
-                    simulation_edge = edge
+                    simulation_edge: Optional[Edge] = edge
+
+            assert simulation_action is not None and simulation_edge is not None, "No edges or better than -inf."
 
             new_state, value, done = current_node.state.take_action(simulation_action)
             current_node = simulation_edge.out_node
             breadcrumbs.append(simulation_edge)
 
-        # lg.logger_mcts.info('DONE...%d', done)
-
         return current_node, value, done, breadcrumbs
 
-    def back_fill(self, leaf, value, breadcrumbs):
+    @staticmethod
+    def back_fill(leaf, value, breadcrumbs):
 
         current_player = leaf.state.player_turn
 
@@ -112,5 +110,5 @@ class MCTS:
             edge.stats['W'] = edge.stats['W'] + value * direction
             edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
 
-    def add_node(self, node):
+    def add_node(self, node: Node):
         self.tree[node.id] = node
