@@ -30,6 +30,7 @@ class User(AbstractAgent):
         self.action_size = action_size
 
     def act(self, state: GameState, tau):
+        print("\n")
         print(state.render(None))
         action = int(input('Enter your chosen action: '))
         pi = np.zeros(self.action_size)
@@ -41,7 +42,7 @@ class User(AbstractAgent):
 
 class Agent(AbstractAgent):
     def __init__(self, name: str, state_size: int, action_size: int, mcts_simulations: int, cpuct: int,
-                 model: Residual_CNN) -> None:
+                 model: Residual_CNN, version: int) -> None:
         super().__init__(name)
         self.state_size = state_size
         self.action_size = action_size
@@ -59,6 +60,7 @@ class Agent(AbstractAgent):
         self.val_overall_loss = []
         self.val_value_loss = []
         self.val_policy_loss = []
+        self.version = version
 
     def simulate(self) -> None:
         # MOVE THE LEAF NODE

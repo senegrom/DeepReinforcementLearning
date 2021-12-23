@@ -66,8 +66,9 @@ def main():
     # CREATE THE PLAYERS #
 
     current_player = Agent('current_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT,
-                           current_nn)
-    best_player = Agent('best_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_nn)
+                           current_nn, best_player_version)
+    best_player = Agent('best_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_nn,
+                        best_player_version)
     iteration = initialise.INITIAL_RUN_NUMBER if initialise.INITIAL_RUN_NUMBER is not None else 0
 
     while True:
@@ -115,6 +116,7 @@ def main():
                 best_player_version += 1
                 best_nn.model.set_weights(current_nn.model.get_weights())
                 best_nn.write(env.name, best_player_version)
+                best_player.version = best_player_version
 
         else:
             print('MEMORY SIZE: ' + str(len(memory.ltmemory)))

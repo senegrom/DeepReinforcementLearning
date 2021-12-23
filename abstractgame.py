@@ -66,9 +66,10 @@ _TGameState = TypeVar('_TGameState', covariant=True, bound=AbstractGameState)
 
 class AbstractGame(Generic[_TGameState], ABC):
     input_shape = np.array([], dtype=np.int32)
+    state_size = 0
+    action_size = 0
+    name = ""
 
-    def __init__(self, current_player: int, game_state: _TGameState, action_size: int, name: str):
+    def __init__(self, current_player: int, game_state: _TGameState):
         self.current_player = current_player
         self.game_state: _TGameState = game_state
-        self.name = name
-        self.action_size = action_size
