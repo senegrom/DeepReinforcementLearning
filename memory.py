@@ -11,8 +11,12 @@ class Memory:
         self.stmemory = deque(maxlen=config.MEMORY_SIZE)
 
     def commit_stmemory(self, identities, state: AbstractGameState, action_values):
+        Memory.commit_to(identities, state, action_values, self.stmemory) #todo for parallel
+
+    @staticmethod
+    def commit_to(identities, state: AbstractGameState, action_values, stmemory: deque):
         for r in identities(state, action_values):
-            self.stmemory.append({
+            stmemory.append({
                 'board': r[0].board,
                 'state': r[0],
                 'id': r[0].id,
