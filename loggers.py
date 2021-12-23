@@ -5,9 +5,9 @@ from utils import setup_logger
 # WARNING: the mcts log file gets big quite quickly
 
 LOGGER_DISABLED = {
-    'main': False
+    'main': True
     , 'memory': True
-    , 'tourney': False
+    , 'tourney': True
     , 'mcts': True
     , 'model': False}
 

@@ -115,47 +115,46 @@ def _play_match(player1: AbstractAgent, player2: AbstractAgent, e: int, logger: 
             env.game_state.render(logger)
             logger.info('====================')
 
-        if done == 1:
-            if memory is not None:
-                # If the game is finished, assign the values correctly to the game moves
-                for move in memory.stmemory:
-                    if move['playerTurn'] == state.player_turn:
-                        move['value'] = value
-                    else:
-                        move['value'] = -value
+    if memory is not None:
+        # If the game is finished, assign the values correctly to the game moves
+        for move in memory.stmemory:
+            if move['playerTurn'] == state.player_turn:
+                move['value'] = value
+            else:
+                move['value'] = -value
 
-                memory.commit_ltmemory()
+        memory.commit_ltmemory()
 
-            with _score_lock:
-                with _log_lock:
-                    if value == 1:
-                        logger.info('%s WINS!', players[state.player_turn]['name'])
-                        scores[players[state.player_turn]['name']] += 1
-                        if state.player_turn == 1:
-                            sp_scores['sp'] += 1
-                        else:
-                            sp_scores['nsp'] += 1
+    with _score_lock:
+        with _log_lock:
+            if value == 1:
+                logger.info('%s WINS!', players[state.player_turn]['name'])
+                scores[players[state.player_turn]['name']] += 1
+                if state.player_turn == 1:
+                    sp_scores['sp'] += 1
+                else:
+                    sp_scores['nsp'] += 1
 
-                    elif value == -1:
-                        logger.info('%s WINS!', players[-state.player_turn]['name'])
-                        scores[players[-state.player_turn]['name']] += 1
+            elif value == -1:
+                logger.info('%s WINS!', players[-state.player_turn]['name'])
+                scores[players[-state.player_turn]['name']] += 1
 
-                        if state.player_turn == 1:
-                            sp_scores['nsp'] += 1
-                        else:
-                            sp_scores['sp'] += 1
+                if state.player_turn == 1:
+                    sp_scores['nsp'] += 1
+                else:
+                    sp_scores['sp'] += 1
 
-                    else:
-                        logger.info('DRAW...')
-                        scores['drawn'] += 1
-                        sp_scores['drawn'] += 1
+            else:
+                logger.info('DRAW...')
+                scores['drawn'] += 1
+                sp_scores['drawn'] += 1
 
-                pts = state.score
-                points[players[state.player_turn]['name']].append(pts[0])
-                points[players[-state.player_turn]['name']].append(pts[1])
+        pts = state.score
+        points[players[state.player_turn]['name']].append(pts[0])
+        points[players[-state.player_turn]['name']].append(pts[1])
 
 
-PARALLEL = True
+PARALLEL = False
 
 
 def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int, logger: Logger, turns_until_tau0: int,
@@ -165,7 +164,7 @@ def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int
     points = {player1.name: [], player2.name: []}
 
     if PARALLEL and isinstance(player1, Agent) and isinstance(player2, Agent):
-        exe = ThreadPoolExecutor()
+        exe = ThreadPoolExecutor(50)
         tasks = []
     else:
         exe = None
@@ -177,24 +176,30 @@ def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int
                                       config.HIDDEN_CNN_LAYERS)
             player1_network = player1_nn.read(Game.name, player1.version)
             player1_nn.model.set_weights(player1_network.get_weights())
-            player1 = Agent('player1', Game.state_size, Game.action_size, config.MCTS_SIMS, config.CPUCT, player1_nn,
-                            player1.version)
+            player1x = Agent(player1.name, Game.state_size, Game.action_size, config.MCTS_SIMS, config.CPUCT,
+                             player1_nn, player1.version)
+        else:
+            player1x = player1
+
         if isinstance(player2, Agent) and player2.version > 0:
             player2_nn = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, Game.input_shape, Game.action_size,
                                       config.HIDDEN_CNN_LAYERS)
             player2_network = player2_nn.read(Game.name, player2.version)
             player2_nn.model.set_weights(player2_network.get_weights())
-            player2 = Agent('player2', Game.state_size, Game.action_size, config.MCTS_SIMS, config.CPUCT, player2_nn,
-                            player2.version)
+            player2x = Agent(player2.name, Game.state_size, Game.action_size, config.MCTS_SIMS, config.CPUCT,
+                             player2_nn, player2.version)
+        else:
+            player2x = player2
 
         if tasks is not None:
             tasks.append(
-                exe.submit(_play_match, player1, player2, e, logger, turns_until_tau0, memory, goes_first, scores,
+                exe.submit(_play_match, player1x, player2x, e, logger, turns_until_tau0, memory, goes_first, scores,
                            sp_scores, points))
         else:
-            _play_match(player1, player2, e, logger, turns_until_tau0, memory, goes_first, scores, sp_scores, points)
+            _play_match(player1x, player2x, e, logger, turns_until_tau0, memory, goes_first, scores, sp_scores, points)
 
     if tasks is not None:
         wait(tasks)
+        exe.shutdown()
 
     return scores, memory, points, sp_scores
