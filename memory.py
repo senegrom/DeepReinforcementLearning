@@ -12,11 +12,11 @@ class Memory:
     def commit_stmemory(self, identities, state, action_values):
         for r in identities(state, action_values):
             self.stmemory.append({
-                'board': r[0].board
-                , 'state': r[0]
-                , 'id': r[0].id
-                , 'AV': r[1]
-                , 'playerTurn': r[0].player_turn
+                'board': r[0].board,
+                'state': r[0],
+                'id': r[0].id,
+                'AV': r[1],
+                'playerTurn': r[0].player_turn
             })
 
     def commit_ltmemory(self):

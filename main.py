@@ -41,9 +41,9 @@ def main():
     # LOAD MODEL IF NECESSARY #
 
     # create an untrained neural network objects from the config file
-    current_nn = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (2,) + env.grid_shape, env.action_size,
+    current_nn = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape, env.action_size,
                               config.HIDDEN_CNN_LAYERS)
-    best_nn = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (2,) + env.grid_shape, env.action_size,
+    best_nn = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape, env.action_size,
                            config.HIDDEN_CNN_LAYERS)
 
     # If loading an existing neural netwrok, set the weights from that model
@@ -88,7 +88,8 @@ def main():
         memory.clear_stmemory()
 
         if iteration % 5 == 0:
-            pickle.dump(memory, open(run_folder + "memory/memory" + str(iteration).zfill(4) + ".p", "wb"))
+            with open(f"{run_folder}/memory/memory{iteration:0>4}.p", "wb") as f:
+                pickle.dump(memory, f)
 
         if len(memory.ltmemory) >= 1000:
 
@@ -100,8 +101,7 @@ def main():
             # TOURNAMENT #
             print('TOURNAMENT...')
             scores, _, points, sp_scores = play_matches(best_player, current_player, config.EVAL_EPISODES,
-                                                        lg.logger_tourney,
-                                                        turns_until_tau0=0, memory=None)
+                                                        lg.logger_tourney, turns_until_tau0=0, memory=None)
             print('\nSCORES')
             print(scores)
             print('\nSTARTING PLAYER / NON-STARTING PLAYER SCORES')

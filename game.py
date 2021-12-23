@@ -82,11 +82,11 @@ class GameState(AbstractGameState):
         [15, 23, 31, 39],
         [14, 22, 30, 38],
     ]
-    pieces = {'1': 'X', '0': '-', '-1': 'O'}
+    pieces = ["-", "X", "O"]  # -1 for O
 
     def __init__(self, board, player_turn):
         super().__init__(board, player_turn)
-        self.id = self._convert_state_to_id()
+        self.id = ''.join(map(str, self.binary))
 
     @property
     def allowed_actions(self) -> list:
@@ -103,13 +103,10 @@ class GameState(AbstractGameState):
 
     @property
     def binary(self) -> tf.Tensor:
-        currentplayer_position = tf.zeros(len(self.board), dtype=tf.int32)
-        currentplayer_position[self.board == self.player_turn] = 1
-
-        other_position = tf.zeros(len(self.board), dtype=tf.int32)
-        other_position[self.board == -self.player_turn] = 1
-
-        position = tf.concat(currentplayer_position, other_position, axis=0)
+        position = tf.stack([
+            tf.where(self.board == self.player_turn, 1, 0),
+            tf.where(self.board == -self.player_turn, 1, 0)
+        ], axis=0)
 
         return position
 
@@ -131,8 +128,8 @@ class GameState(AbstractGameState):
         if np.count_nonzero(self.board) == 42:
             return True
 
-        for x, y, z, a in self.winners:
-            if self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.player_turn:
+        for w in self.winners:
+            if self.board[w].sum() == 4 * -self.player_turn:
                 return True
         return False
 
@@ -140,39 +137,39 @@ class GameState(AbstractGameState):
     def value(self) -> (int, int, int):
         # This is the value of the state for the current player
         # i.e. if the previous player played a winning move, you lose
-        for x, y, z, a in self.winners:
-            if self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.player_turn:
+        for w in self.winners:
+            if self.board[w].sum() == 4 * -self.player_turn:
                 return -1, -1, 1
         return 0, 0, 0
 
     def render(self, logger) -> Optional[str]:
         if logger is not None:
             for r in range(6):
-                logger.info([self.pieces[str(x)] for x in self.board[7 * r: (7 * r + 7)]])
+                logger.info([self.pieces[x] for x in self.board[7 * r: (7 * r + 7)]])
             logger.info('--------------')
             return None
         s = []
         for r in range(6):
-            s.append(f"{[self.pieces[str(x)] for x in self.board[7 * r: (7 * r + 7)]]}\n")
+            s.append(f"{[self.pieces[x] for x in self.board[7 * r: (7 * r + 7)]]}\n")
         s.append('--------------\n')
         return "".join(s)
 
 
 # noinspection DuplicatedCode
 class Game(AbstractGame[GameState]):
-    grid_shape = tf.convert_to_tensor((6, 7))
-    input_shape = tf.convert_to_tensor((2, 6, 7))
-    identity_perm = tf.convert_to_tensor(
+    grid_shape = tf.constant([6, 7])
+    input_shape = tf.constant([2, 6, 7])
+    identity_perm = tf.constant(
         [6, 5, 4, 3, 2, 1, 0, 13, 12, 11, 10, 9, 8, 7, 20, 19, 18, 17, 16, 15, 14, 27, 26, 25, 24, 23, 22, 21, 34, 33,
          32, 31, 30, 29, 28, 41, 40, 39, 38, 37, 36, 35])
 
     def __init__(self):
-        super().__init__(current_player=1, game_state=GameState(tf.zeros(42, dtype=np.int32), 1), action_size=42,
+        super().__init__(current_player=1, game_state=GameState(np.zeros(42, dtype=np.int32), 1), action_size=42,
                          name='connect4')
         self.state_size = len(self.game_state.binary)
 
     def reset(self):
-        self.game_state = GameState(tf.zeros(42, dtype=np.int32), 1)
+        self.game_state = GameState(np.zeros(42, dtype=np.int32), 1)
         self.current_player = 1
         return self.game_state
 
@@ -187,11 +184,8 @@ class Game(AbstractGame[GameState]):
     def identities(state: GameState, action_values):
         identities = [(state, action_values)]
 
-        current_board = state.board
-        current_av = action_values
-
-        current_board = current_board[Game.identity_perm]
-        current_av = current_av[Game.identity_perm]
+        current_board = state.board[Game.identity_perm]
+        current_av = action_values[Game.identity_perm]
 
         identities.append((GameState(current_board, state.player_turn), current_av))
 

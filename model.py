@@ -9,9 +9,8 @@ import tensorflow.keras.layers
 from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, Add
 from tensorflow.keras.models import load_model, Model
-from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.optimizers import Nadam
 
-import config
 import loggers as lg
 from initialise import run_folder, run_archive_folder
 from loss import softmax_cross_entropy_with_logits
@@ -117,17 +116,15 @@ class Residual_CNN(Gen_Model):
 
     def residual_layer(self, input_block: tensorflow.keras.Model, n_filters: int,
                        kernel_size) -> tensorflow.keras.Model:
-
         x = self.conv_layer(input_block, n_filters, kernel_size)
-
         x = Conv2D(
-            filters=n_filters
-            , kernel_size=kernel_size
-            , data_format="channels_last"
-            , padding='same'
-            , use_bias=False
-            , activation='linear'
-            , kernel_regularizer=regularizers.l2(self.reg_const)
+            filters=n_filters,
+            kernel_size=kernel_size,
+            data_format="channels_last",
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
         x = BatchNormalization(axis=-1)(x)
         x = Add()([input_block, x])
@@ -136,15 +133,14 @@ class Residual_CNN(Gen_Model):
         return x
 
     def conv_layer(self, x: tensorflow.keras.Model, n_filters: int, kernel_size) -> tensorflow.keras.Model:
-
         x = Conv2D(
-            filters=n_filters
-            , kernel_size=kernel_size
-            , data_format="channels_last"
-            , padding='same'
-            , use_bias=False
-            , activation='linear'
-            , kernel_regularizer=regularizers.l2(self.reg_const)
+            filters=n_filters,
+            kernel_size=kernel_size,
+            data_format="channels_last",
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
         x = BatchNormalization(axis=-1)(x)
         x = LeakyReLU()(x)
@@ -152,57 +148,56 @@ class Residual_CNN(Gen_Model):
         return x
 
     def value_head(self, x: tensorflow.keras.Model) -> tensorflow.keras.Model:
-
         x = Conv2D(
-            filters=1
-            , kernel_size=(1, 1)
-            , data_format="channels_last"
-            , padding='same'
-            , use_bias=False
-            , activation='linear'
-            , kernel_regularizer=regularizers.l2(self.reg_const)
+            filters=1,
+            kernel_size=(1, 1),
+            data_format="channels_last",
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
         x = BatchNormalization(axis=-1)(x)
         x = LeakyReLU()(x)
         x = Flatten()(x)
 
         x = Dense(
-            20
-            , use_bias=False
-            , activation='linear'
-            , kernel_regularizer=regularizers.l2(self.reg_const)
+            20,
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
 
         x = LeakyReLU()(x)
         x = Dense(
-            1
-            , use_bias=False
-            , activation='tanh'
-            , kernel_regularizer=regularizers.l2(self.reg_const)
-            , name='value_head'
+            1,
+            use_bias=False,
+            activation='tanh',
+            kernel_regularizer=regularizers.l2(self.reg_const),
+            name='value_head'
         )(x)
         return x
 
     def policy_head(self, x: tensorflow.keras.Model) -> tensorflow.keras.Model:
         x = Conv2D(
-            filters=2
-            , kernel_size=(1, 1)
-            , data_format="channels_last"
-            , padding='same'
-            , use_bias=False
-            , activation='linear'
-            , kernel_regularizer=regularizers.l2(self.reg_const)
+            filters=2,
+            kernel_size=(1, 1),
+            data_format="channels_last",
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self.reg_const)
         )(x)
         x = BatchNormalization(axis=-1)(x)
         x = LeakyReLU()(x)
         x = Flatten()(x)
 
         x = Dense(
-            self.output_dim
-            , use_bias=False
-            , activation='linear'
-            , kernel_regularizer=regularizers.l2(self.reg_const)
-            , name='policy_head'
+            self.output_dim,
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self.reg_const),
+            name='policy_head'
         )(x)
 
         return x
@@ -223,8 +218,8 @@ class Residual_CNN(Gen_Model):
 
         model = Model(inputs=[main_input], outputs=[vh, ph])
         model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': softmax_cross_entropy_with_logits},
-                      optimizer=SGD(learning_rate=self.learning_rate, momentum=config.MOMENTUM),
-                      loss_weights={'value_head': 0.5, 'policy_head': 0.5}
+                      optimizer=Nadam(learning_rate=self.learning_rate),
+                      loss_weights={'value_head': 0.2, 'policy_head': 0.8}
                       )
 
         return model

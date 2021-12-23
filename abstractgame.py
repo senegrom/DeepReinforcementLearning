@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Generic, TypeVar
 
+import numpy as np
 import tensorflow as tf
 
 
 class AbstractGameState(ABC):
 
-    def __init__(self, board: tf.Tensor, player_turn: int):
+    def __init__(self, board: np.ndarray, player_turn: int):
         self.player_turn: int = player_turn
-        self.board: tf.Tensor = board
+        self.board: np.ndarray = board
 
     @property
     @abstractmethod
@@ -30,6 +31,7 @@ class AbstractGameState(ABC):
     def value(self) -> (int, int, int):
         pass
 
+    @property
     def score(self) -> (int, int):
         a, b, _ = self.value
         return a, b
@@ -39,9 +41,8 @@ class AbstractGameState(ABC):
         pass
 
     def take_action(self, action: int) -> ("AbstractGameState", float, int):
-        new_board: tf.Tensor = tf.identity(self.board)
+        new_board = np.copy(self.board)
         new_board[action] = self.player_turn
-
         new_state = self.__class__(new_board, -self.player_turn)
 
         value = 0

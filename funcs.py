@@ -94,9 +94,9 @@ def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int
             for r in range(env.grid_shape[0]):
                 logger.info(['----' if x == 0 else '{0:.2f}'.format(np.round(x, 2)) for x in
                              pi[env.grid_shape[1] * r: (env.grid_shape[1] * r + env.grid_shape[1])]])
-            logger.info('MCTS perceived value for %s: %f', state.pieces[str(state.player_turn)],
+            logger.info('MCTS perceived value for %s: %f', state.pieces[state.player_turn],
                         np.round(mcts_value, 2))
-            logger.info('NN perceived value for %s: %f', state.pieces[str(state.player_turn)], np.round(nn_value, 2))
+            logger.info('NN perceived value for %s: %f', state.pieces[state.player_turn], np.round(nn_value, 2))
             logger.info('====================')
 
             state, value, done, _ = env.step(action)
