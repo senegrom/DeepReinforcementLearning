@@ -8,6 +8,7 @@ np.set_printoptions(suppress=True)
 from shutil import copyfile
 from importlib import reload
 
+from abstractgame import AbstractGame
 from game import Game
 from agent import Agent
 from memory import Memory
@@ -27,7 +28,7 @@ def main():
     lg.logger_main.info('=*=*=*=*=*=.      NEW LOG      =*=*=*=*=*')
     lg.logger_main.info('=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*')
 
-    env = Game()
+    env: AbstractGame = Game()
 
     # LOAD MEMORIES IF NECESSARY #
 
@@ -91,7 +92,7 @@ def main():
             with open(f"{run_folder}/memory/memory{iteration:0>4}.p", "wb") as f:
                 pickle.dump(memory, f)
 
-        if len(memory.ltmemory) >= 1:
+        if len(memory.ltmemory) >= 1000:
 
             # RETRAINING #
             print('RETRAINING...')

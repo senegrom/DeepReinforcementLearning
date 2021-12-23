@@ -5,7 +5,6 @@ from typing import Dict, List, Tuple, Union, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.layers
 from tensorflow.keras import Model, regularizers
 from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, Add
 from tensorflow.keras.models import load_model
@@ -19,14 +18,14 @@ from loss import softmax_cross_entropy_with_logits
 
 # noinspection PyPep8Naming
 class Gen_Model:
-    def __init__(self, reg_const: float, learning_rate: float, input_dim: tf.Tensor, output_dim: int) -> None:
+    def __init__(self, reg_const: float, learning_rate: float, input_dim: np.ndarray, output_dim: int) -> None:
         self.reg_const: float = reg_const
         self.learning_rate: float = learning_rate
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.model: Optional[Model] = None
 
-    def predict(self, x: tf.Tensor) -> List[tf.Tensor]:
+    def predict(self, x: tf.Tensor) -> List[np.ndarray]:
         return self.model.predict(x)
 
     def fit(self, states, targets, epochs, verbose, validation_split, batch_size):
@@ -106,17 +105,20 @@ class Gen_Model:
         lg.logger_model.info('------------------')
 
 
+_T_HIDDEN_LAYERS = List[Dict[str, Union[int, Tuple[int, int]]]]
+
+
 # noinspection PyPep8Naming
 class Residual_CNN(Gen_Model):
-    def __init__(self, reg_const: float, learning_rate: float, input_dim: tf.Tensor, output_dim: int,
-                 hidden_layers: List[Dict[str, Union[int, Tuple[int, int]]]]) -> None:
+    def __init__(self, reg_const: float, learning_rate: float, input_dim: np.ndarray, output_dim: int,
+                 hidden_layers: _T_HIDDEN_LAYERS) -> None:
         Gen_Model.__init__(self, reg_const, learning_rate, input_dim, output_dim)
         self.hidden_layers = hidden_layers
         self.num_layers: int = len(hidden_layers)
         self.model = self._build_model()
 
-    def residual_layer(self, input_block: tensorflow.keras.Model, n_filters: int,
-                       kernel_size: Tuple[int, int]) -> tensorflow.keras.Model:
+    def residual_layer(self, input_block: Model, n_filters: int,
+                       kernel_size: Tuple[int, int]) -> Model:
         x = self.conv_layer(input_block, n_filters, kernel_size)
         x = Conv2D(
             filters=n_filters,
@@ -133,8 +135,8 @@ class Residual_CNN(Gen_Model):
 
         return x
 
-    def conv_layer(self, x: tensorflow.keras.Model, n_filters: int,
-                   kernel_size: Tuple[int, int]) -> tensorflow.keras.Model:
+    def conv_layer(self, x: Model, n_filters: int,
+                   kernel_size: Tuple[int, int]) -> Model:
         x = Conv2D(
             filters=n_filters,
             kernel_size=kernel_size,
@@ -149,7 +151,7 @@ class Residual_CNN(Gen_Model):
 
         return x
 
-    def value_head(self, x: tensorflow.keras.Model) -> tensorflow.keras.Model:
+    def value_head(self, x: Model) -> Model:
         x = Conv2D(
             filters=1,
             kernel_size=(1, 1),
@@ -180,7 +182,7 @@ class Residual_CNN(Gen_Model):
         )(x)
         return x
 
-    def policy_head(self, x: tensorflow.keras.Model) -> tensorflow.keras.Model:
+    def policy_head(self, x: Model) -> Model:
         x = Conv2D(
             filters=2,
             kernel_size=(1, 1),

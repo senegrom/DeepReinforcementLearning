@@ -114,7 +114,6 @@ class Agent(AbstractAgent):
         return value, probs, allowed_actions
 
     def evaluate_leaf(self, leaf: Node, value: int, done: int) -> np.ndarray:
-
         if done == 0:
             value, probs, allowed_actions = self.get_preds(leaf.state)
 

@@ -5,6 +5,7 @@ import numpy as np
 from abstractgame import AbstractGame, AbstractGameState
 
 
+# noinspection DuplicatedCode
 class GameState(AbstractGameState):
     winners = [
         {'points': 1, 'tiles': [
@@ -164,9 +165,10 @@ class GameState(AbstractGameState):
         return "".join(s)
 
 
+# noinspection DuplicatedCode
 class Game(AbstractGame[GameState]):
-    grid_shape = (5, 5)
-    input_shape = (2, 5, 5)
+    grid_shape = np.array([5, 5])
+    input_shape = np.array([2, 5, 5])
 
     def __init__(self):
         super().__init__(1, GameState(np.zeros(25, dtype=np.int), 1), 25, 'metaSquares')

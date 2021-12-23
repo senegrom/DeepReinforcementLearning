@@ -1,10 +1,10 @@
 import argparse
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(allow_abbrev=False)
 
-parser.add_argument("-n", "--run-number", required=False, default=None, type=int)
-parser.add_argument("-m", "--model-version", required=False, default=None, type=int)
-parser.add_argument("-y", "--memory-version", required=False, default=None, type=int)
+parser.add_argument("-nn", "--run-number", required=False, default=None, type=int)
+parser.add_argument("-mm", "--model-version", required=False, default=None, type=int)
+parser.add_argument("-yy", "--memory-version", required=False, default=None, type=int)
 parser.add_argument("--run-folder", required=False, default='./run/', type=str)
 parser.add_argument("--run-archive-folder", required=False, default='./run_archive/', type=str)
 
