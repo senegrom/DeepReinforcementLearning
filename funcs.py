@@ -1,10 +1,13 @@
 import random
+from logging import Logger
+from typing import Optional
 
 import numpy as np
 
 import config
 from agent import Agent, User, AbstractAgent
 from game import Game
+from memory import Memory
 from model import Residual_CNN
 
 
@@ -40,8 +43,8 @@ def play_matches_between_versions(env, player1version: int, player2version: int,
     return scores, memory, points, sp_scores
 
 
-def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int, logger, turns_until_tau0: int,
-                 memory=None, goes_first=0):
+def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int, logger: Logger, turns_until_tau0: int,
+                 memory: Optional[Memory] = None, goes_first: int = 0):
     env = Game()
     scores = {player1.name: 0, "drawn": 0, player2.name: 0}
     sp_scores = {'sp': 0, "drawn": 0, 'nsp': 0}
@@ -78,7 +81,7 @@ def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int
         env.game_state.render(logger)
 
         while done == 0:
-            turn = turn + 1
+            turn += 1
 
             # Run the MCTS algo and return an action
             if turn < turns_until_tau0:
@@ -116,25 +119,25 @@ def play_matches(player1: AbstractAgent, player2: AbstractAgent, n_episodes: int
 
                 if value == 1:
                     logger.info('%s WINS!', players[state.player_turn]['name'])
-                    scores[players[state.player_turn]['name']] = scores[players[state.player_turn]['name']] + 1
+                    scores[players[state.player_turn]['name']] += 1
                     if state.player_turn == 1:
-                        sp_scores['sp'] = sp_scores['sp'] + 1
+                        sp_scores['sp'] += 1
                     else:
-                        sp_scores['nsp'] = sp_scores['nsp'] + 1
+                        sp_scores['nsp'] += 1
 
                 elif value == -1:
                     logger.info('%s WINS!', players[-state.player_turn]['name'])
-                    scores[players[-state.player_turn]['name']] = scores[players[-state.player_turn]['name']] + 1
+                    scores[players[-state.player_turn]['name']] += 1
 
                     if state.player_turn == 1:
-                        sp_scores['nsp'] = sp_scores['nsp'] + 1
+                        sp_scores['nsp'] += 1
                     else:
-                        sp_scores['sp'] = sp_scores['sp'] + 1
+                        sp_scores['sp'] += 1
 
                 else:
                     logger.info('DRAW...')
-                    scores['drawn'] = scores['drawn'] + 1
-                    sp_scores['drawn'] = sp_scores['drawn'] + 1
+                    scores['drawn'] += 1
+                    sp_scores['drawn'] += 1
 
                 pts = state.score
                 points[players[state.player_turn]['name']].append(pts[0])

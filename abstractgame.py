@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Generic, TypeVar
+from logging import Logger
+from typing import Optional, Generic, TypeVar, Tuple
 
 import numpy as np
 import tensorflow as tf
@@ -28,19 +29,24 @@ class AbstractGameState(ABC):
 
     @property
     @abstractmethod
-    def value(self) -> (int, int, int):
+    def value(self) -> Tuple[int, int, int]:
         pass
 
     @property
-    def score(self) -> (int, int):
+    @abstractmethod
+    def id(self) -> str:
+        pass
+
+    @property
+    def score(self) -> Tuple[int, int]:
         a, b, _ = self.value
         return a, b
 
     @abstractmethod
-    def render(self, logger) -> Optional[str]:
+    def render(self, logger: Optional[Logger]) -> Optional[str]:
         pass
 
-    def take_action(self, action: int) -> ("AbstractGameState", float, int):
+    def take_action(self, action: int) -> Tuple["AbstractGameState", float, int]:
         new_board = np.copy(self.board)
         new_board[action] = self.player_turn
         new_state = self.__class__(new_board, -self.player_turn)

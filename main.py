@@ -91,7 +91,7 @@ def main():
             with open(f"{run_folder}/memory/memory{iteration:0>4}.p", "wb") as f:
                 pickle.dump(memory, f)
 
-        if len(memory.ltmemory) >= 1000:
+        if len(memory.ltmemory) >= 1:
 
             # RETRAINING #
             print('RETRAINING...')
@@ -111,7 +111,7 @@ def main():
             print('\n\n')
 
             if scores['current_player'] > scores['best_player'] * config.SCORING_THRESHOLD:
-                best_player_version = best_player_version + 1
+                best_player_version += 1
                 best_nn.model.set_weights(current_nn.model.get_weights())
                 best_nn.write(env.name, best_player_version)
 

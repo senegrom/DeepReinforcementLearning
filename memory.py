@@ -1,6 +1,7 @@
 from collections import deque
 
 import config
+from abstractgame import AbstractGameState
 
 
 class Memory:
@@ -9,7 +10,7 @@ class Memory:
         self.ltmemory = deque(maxlen=config.MEMORY_SIZE)
         self.stmemory = deque(maxlen=config.MEMORY_SIZE)
 
-    def commit_stmemory(self, identities, state, action_values):
+    def commit_stmemory(self, identities, state: AbstractGameState, action_values):
         for r in identities(state, action_values):
             self.stmemory.append({
                 'board': r[0].board,

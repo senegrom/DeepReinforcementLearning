@@ -2,12 +2,16 @@
 
 import random
 from abc import ABC, abstractmethod
+from typing import List, Tuple
 
 import numpy as np
+import tensorflow as tf
 
-import MCTS
 import config
+from MCTS import MCTS, Node, Edge
+from abstractgame import AbstractGameState
 from game import GameState
+from model import Residual_CNN
 
 
 class AbstractAgent(ABC):
@@ -15,7 +19,7 @@ class AbstractAgent(ABC):
     def act(self, state, tau):
         pass
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         self.name: str = name
 
 
@@ -36,7 +40,8 @@ class User(AbstractAgent):
 
 
 class Agent(AbstractAgent):
-    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model):
+    def __init__(self, name: str, state_size: int, action_size: int, mcts_simulations: int, cpuct: int,
+                 model: Residual_CNN) -> None:
         super().__init__(name)
         self.state_size = state_size
         self.action_size = action_size
@@ -55,17 +60,17 @@ class Agent(AbstractAgent):
         self.val_value_loss = []
         self.val_policy_loss = []
 
-    def simulate(self):
+    def simulate(self) -> None:
         # MOVE THE LEAF NODE
         leaf, value, done, breadcrumbs = self.mcts.move_to_leaf()
 
         # EVALUATE THE LEAF NODE
-        value, breadcrumbs = self.evaluate_leaf(leaf, value, done, breadcrumbs)
+        value = self.evaluate_leaf(leaf, value, done)
 
         # BACKFILL THE VALUE THROUGH THE TREE
         self.mcts.back_fill(leaf, value, breadcrumbs)
 
-    def act(self, state, tau):
+    def act(self, state: GameState, tau: int) -> Tuple[int, np.ndarray, float, np.ndarray]:
 
         if self.mcts is None or state.id not in self.mcts.tree:
             self.build_mcts(state)
@@ -86,11 +91,10 @@ class Agent(AbstractAgent):
 
         return action, pi, value, nn_value
 
-    def get_preds(self, state):
+    def get_preds(self, state: AbstractGameState) -> Tuple[np.ndarray, np.ndarray, List[int]]:
         # predict the leaf
-        input_to_model = np.array([self.model.convertToModelInput(state)])
 
-        preds = self.model.predict(input_to_model)
+        preds = self.model.predict(tf.expand_dims(self.model.convert_to_model_input(state), 0))
         value_array = preds[0]
         logits_array = preds[1]
         value = value_array[0]
@@ -109,7 +113,7 @@ class Agent(AbstractAgent):
 
         return value, probs, allowed_actions
 
-    def evaluate_leaf(self, leaf, value, done, breadcrumbs):
+    def evaluate_leaf(self, leaf: Node, value: int, done: int) -> np.ndarray:
 
         if done == 0:
             value, probs, allowed_actions = self.get_preds(leaf.state)
@@ -119,17 +123,17 @@ class Agent(AbstractAgent):
             for idx, action in enumerate(allowed_actions):
                 new_state, _, _ = leaf.state.take_action(action)
                 if new_state.id not in self.mcts.tree:
-                    node = MCTS.Node(new_state)
+                    node = Node(new_state)
                     self.mcts.add_node(node)
                 else:
                     node = self.mcts.tree[new_state.id]
 
-                new_edge = MCTS.Edge(leaf, node, probs[idx], action)
+                new_edge = Edge(leaf, node, probs[idx], action)
                 leaf.edges.append((action, new_edge))
 
-        return value, breadcrumbs
+        return value
 
-    def get_av(self, tau):
+    def get_av(self, tau: int) -> Tuple[np.ndarray, np.ndarray]:
         edges = self.mcts.root.edges
         pi = np.zeros(self.action_size, dtype=np.integer)
         values = np.zeros(self.action_size, dtype=np.float32)
@@ -142,7 +146,7 @@ class Agent(AbstractAgent):
         return pi, values
 
     @staticmethod
-    def choose_action(pi, values, tau):
+    def choose_action(pi: np.ndarray, values: np.ndarray, tau: int) -> Tuple[int, float]:
         if tau == 0:
             actions = np.argwhere(pi == max(pi))
             action = random.choice(actions)[0]
@@ -155,11 +159,10 @@ class Agent(AbstractAgent):
         return action, value
 
     def replay(self, ltmemory):
-
         for _ in range(config.TRAINING_LOOPS):
             minibatch = random.sample(ltmemory, min(config.BATCH_SIZE, len(ltmemory)))
 
-            training_states = np.array([self.model.convertToModelInput(row['state']) for row in minibatch])
+            training_states = np.array([self.model.convert_to_model_input(row['state']) for row in minibatch])
             training_targets = {'value_head': np.array([row['value'] for row in minibatch]),
                                 'policy_head': np.array([row['AV'] for row in minibatch])}
 
@@ -177,8 +180,8 @@ class Agent(AbstractAgent):
         preds = self.model.predict(input_to_model)
         return preds
 
-    def build_mcts(self, state):
-        self.mcts = MCTS.MCTS(MCTS.Node(state), self.cpuct)
+    def build_mcts(self, state: GameState) -> None:
+        self.mcts = MCTS(Node(state), self.cpuct)
 
-    def change_root_mcts(self, state):
+    def change_root_mcts(self, state: GameState) -> None:
         self.mcts.root = self.mcts.tree[state.id]

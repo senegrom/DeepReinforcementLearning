@@ -1,7 +1,9 @@
-from typing import Optional
+from logging import Logger
+from typing import List, Optional, Tuple
 
 import numpy as np
 import tensorflow as tf
+from numpy import int64, ndarray
 
 from abstractgame import AbstractGame, AbstractGameState
 
@@ -84,9 +86,12 @@ class GameState(AbstractGameState):
     ]
     pieces = ["-", "X", "O"]  # -1 for O
 
-    def __init__(self, board, player_turn):
+    def __init__(self, board: ndarray, player_turn: int) -> None:
         super().__init__(board, player_turn)
-        self.id = ''.join(map(str, self.binary))
+
+    @property
+    def id(self) -> str:
+        return ''.join(map(str, self.binary))
 
     @property
     def allowed_actions(self) -> list:
@@ -134,7 +139,7 @@ class GameState(AbstractGameState):
         return False
 
     @property
-    def value(self) -> (int, int, int):
+    def value(self) -> Tuple[int, int, int]:
         # This is the value of the state for the current player
         # i.e. if the previous player played a winning move, you lose
         for w in self.winners:
@@ -142,7 +147,7 @@ class GameState(AbstractGameState):
                 return -1, -1, 1
         return 0, 0, 0
 
-    def render(self, logger) -> Optional[str]:
+    def render(self, logger: Optional[Logger]) -> Optional[str]:
         if logger is not None:
             for r in range(6):
                 logger.info([self.pieces[x] for x in self.board[7 * r: (7 * r + 7)]])
@@ -163,17 +168,17 @@ class Game(AbstractGame[GameState]):
         [6, 5, 4, 3, 2, 1, 0, 13, 12, 11, 10, 9, 8, 7, 20, 19, 18, 17, 16, 15, 14, 27, 26, 25, 24, 23, 22, 21, 34, 33,
          32, 31, 30, 29, 28, 41, 40, 39, 38, 37, 36, 35])
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(current_player=1, game_state=GameState(np.zeros(42, dtype=np.int32), 1), action_size=42,
                          name='connect4')
         self.state_size = len(self.game_state.binary)
 
-    def reset(self):
+    def reset(self) -> GameState:
         self.game_state = GameState(np.zeros(42, dtype=np.int32), 1)
         self.current_player = 1
         return self.game_state
 
-    def step(self, action):
+    def step(self, action: int64) -> Tuple[AbstractGameState, float, int, None]:
         next_state, value, done = self.game_state.take_action(action)
         self.game_state = next_state
         self.current_player = -self.current_player
@@ -181,7 +186,7 @@ class Game(AbstractGame[GameState]):
         return next_state, value, done, info
 
     @staticmethod
-    def identities(state: GameState, action_values):
+    def identities(state: GameState, action_values: ndarray) -> List[Tuple[GameState, ndarray]]:
         identities = [(state, action_values)]
 
         current_board = state.board[Game.identity_perm]

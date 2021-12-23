@@ -1,31 +1,32 @@
 # %matplotlib inline
 
-from typing import Optional
+from typing import Dict, List, Tuple, Union, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.layers
-from tensorflow.keras import regularizers
+from tensorflow.keras import Model, regularizers
 from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, Add
-from tensorflow.keras.models import load_model, Model
+from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Nadam
 
 import loggers as lg
+from abstractgame import AbstractGameState
 from initialise import run_folder, run_archive_folder
 from loss import softmax_cross_entropy_with_logits
 
 
 # noinspection PyPep8Naming
 class Gen_Model:
-    def __init__(self, reg_const: float, learning_rate: float, input_dim: tf.shape, output_dim: tf.shape):
+    def __init__(self, reg_const: float, learning_rate: float, input_dim: tf.Tensor, output_dim: int) -> None:
         self.reg_const: float = reg_const
         self.learning_rate: float = learning_rate
-        self.input_dim: tf.shape = input_dim
-        self.output_dim: tf.shape = output_dim
+        self.input_dim = input_dim
+        self.output_dim = output_dim
         self.model: Optional[Model] = None
 
-    def predict(self, x: tf.Tensor):
+    def predict(self, x: tf.Tensor) -> List[tf.Tensor]:
         return self.model.predict(x)
 
     def fit(self, states, targets, epochs, verbose, validation_split, batch_size):
@@ -107,15 +108,15 @@ class Gen_Model:
 
 # noinspection PyPep8Naming
 class Residual_CNN(Gen_Model):
-    def __init__(self, reg_const: float, learning_rate: float, input_dim: tf.shape, output_dim: tf.shape,
-                 hidden_layers):
+    def __init__(self, reg_const: float, learning_rate: float, input_dim: tf.Tensor, output_dim: int,
+                 hidden_layers: List[Dict[str, Union[int, Tuple[int, int]]]]) -> None:
         Gen_Model.__init__(self, reg_const, learning_rate, input_dim, output_dim)
         self.hidden_layers = hidden_layers
         self.num_layers: int = len(hidden_layers)
         self.model = self._build_model()
 
     def residual_layer(self, input_block: tensorflow.keras.Model, n_filters: int,
-                       kernel_size) -> tensorflow.keras.Model:
+                       kernel_size: Tuple[int, int]) -> tensorflow.keras.Model:
         x = self.conv_layer(input_block, n_filters, kernel_size)
         x = Conv2D(
             filters=n_filters,
@@ -132,7 +133,8 @@ class Residual_CNN(Gen_Model):
 
         return x
 
-    def conv_layer(self, x: tensorflow.keras.Model, n_filters: int, kernel_size) -> tensorflow.keras.Model:
+    def conv_layer(self, x: tensorflow.keras.Model, n_filters: int,
+                   kernel_size: Tuple[int, int]) -> tensorflow.keras.Model:
         x = Conv2D(
             filters=n_filters,
             kernel_size=kernel_size,
@@ -202,7 +204,7 @@ class Residual_CNN(Gen_Model):
 
         return x
 
-    def _build_model(self):
+    def _build_model(self) -> Model:
 
         main_input = Input(shape=self.input_dim, name='main_input')
 
@@ -224,7 +226,7 @@ class Residual_CNN(Gen_Model):
 
         return model
 
-    def convertToModelInput(self, state):
+    def convert_to_model_input(self, state: AbstractGameState) -> tf.Tensor:
         input_to_model = state.binary
         input_to_model = tf.reshape(input_to_model, self.input_dim)
         return input_to_model

@@ -78,14 +78,13 @@ class GameState(AbstractGameState):
 
     def __init__(self, board, player_turn):
         super().__init__(board, player_turn)
-        self.binary = self._binary()
-        self.id = self._convert_state_to_id()
 
     @property
     def allowed_actions(self) -> list:
         return np.where(self.board == 0)[0]
 
-    def _binary(self):
+    @property
+    def binary(self):
 
         currentplayer_position = np.zeros(len(self.board), dtype=np.int)
         currentplayer_position[self.board == self.player_turn] = 1
@@ -97,7 +96,8 @@ class GameState(AbstractGameState):
 
         return position
 
-    def _convert_state_to_id(self):
+    @property
+    def id(self):
         player1_position = np.zeros(len(self.board), dtype=np.int)
         player1_position[self.board == 1] = 1
 
@@ -127,9 +127,9 @@ class GameState(AbstractGameState):
                 while tilenum < 4 and check_flag == 0:
                     if self.board[tiles[tilenum]] != self.player_turn:
                         check_flag = 1
-                    tilenum = tilenum + 1
+                    tilenum += 1
                 if check_flag == 0:
-                    current_player_points = current_player_points + points
+                    current_player_points += points
 
         opponent_player_points = 0
         for square_type in self.winners:
@@ -140,9 +140,9 @@ class GameState(AbstractGameState):
                 while tilenum < 4 and check_flag == 0:
                     if self.board[tiles[tilenum]] != -self.player_turn:
                         check_flag = 1
-                    tilenum = tilenum + 1
+                    tilenum += 1
                 if check_flag == 0:
-                    opponent_player_points = opponent_player_points + points
+                    opponent_player_points += points
 
         if current_player_points > opponent_player_points:
             return 1, current_player_points, opponent_player_points

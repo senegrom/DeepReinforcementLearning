@@ -1,19 +1,21 @@
-from typing import Optional
+from typing import Any, List, Tuple, Union, Optional
 
 import numpy as np
+from numpy import ndarray
 
 import config
+from abstractgame import AbstractGameState
 
 
 class Node:
 
-    def __init__(self, state):
+    def __init__(self, state: AbstractGameState) -> None:
         self.state = state
         self.player_turn = state.player_turn
         self.id = state.id
         self.edges = []
 
-    def is_leaf(self):
+    def is_leaf(self) -> bool:
         if len(self.edges) > 0:
             return False
         else:
@@ -21,7 +23,7 @@ class Node:
 
 
 class Edge:
-    def __init__(self, in_node: Node, out_node: Node, prior: float, action):
+    def __init__(self, in_node: Node, out_node: Node, prior: float, action: int) -> None:
         self.id: str = in_node.state.id + '|' + out_node.state.id
         self.in_node: Node = in_node
         self.out_node: Node = out_node
@@ -30,15 +32,15 @@ class Edge:
 
         self.stats = {
             'N': 0,
-            'W': 0,
-            'Q': 0,
+            'W': 0.0,
+            'Q': 0.0,
             'P': prior,
         }
 
 
 class MCTS:
 
-    def __init__(self, root, cpuct):
+    def __init__(self, root: Node, cpuct: int) -> None:
         self.root = root
         self.tree = {}
         self.cpuct = cpuct
@@ -47,7 +49,7 @@ class MCTS:
     def __len__(self):
         return len(self.tree)
 
-    def move_to_leaf(self):
+    def move_to_leaf(self) -> Union[Tuple[Node, int, int, List[Any]], Tuple[Node, int, int, List[Edge]]]:
 
         breadcrumbs = []
         current_node = self.root
@@ -95,7 +97,7 @@ class MCTS:
         return current_node, value, done, breadcrumbs
 
     @staticmethod
-    def back_fill(leaf, value, breadcrumbs):
+    def back_fill(leaf: Node, value: Union[ndarray, int], breadcrumbs: List[Union[Any, Edge]]) -> None:
 
         current_player = leaf.state.player_turn
 
@@ -106,9 +108,9 @@ class MCTS:
             else:
                 direction = -1
 
-            edge.stats['N'] = edge.stats['N'] + 1
+            edge.stats['N'] += 1
             edge.stats['W'] = edge.stats['W'] + value * direction
             edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
 
-    def add_node(self, node: Node):
+    def add_node(self, node: Node) -> None:
         self.tree[node.id] = node

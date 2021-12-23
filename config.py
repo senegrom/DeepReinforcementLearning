@@ -1,5 +1,5 @@
 # SELF PLAY
-EPISODES = 30
+EPISODES = 1
 MCTS_SIMS = 50
 MEMORY_SIZE = 30000
 TURNS_UNTIL_TAU0 = 10  # turn on which it starts playing deterministically
@@ -12,16 +12,15 @@ BATCH_SIZE = 256
 EPOCHS = 10
 REG_CONST = 0.0001
 LEARNING_RATE = 0.01
-MOMENTUM = 0.9
 TRAINING_LOOPS = 10
 
 HIDDEN_CNN_LAYERS = [
+    {'filters': 75, 'kernel_size': (4, 4)},
+    {'filters': 75, 'kernel_size': (4, 4)},
+    {'filters': 75, 'kernel_size': (4, 4)},
+    {'filters': 75, 'kernel_size': (4, 4)},
+    {'filters': 75, 'kernel_size': (4, 4)},
     {'filters': 75, 'kernel_size': (4, 4)}
-    , {'filters': 75, 'kernel_size': (4, 4)}
-    , {'filters': 75, 'kernel_size': (4, 4)}
-    , {'filters': 75, 'kernel_size': (4, 4)}
-    , {'filters': 75, 'kernel_size': (4, 4)}
-    , {'filters': 75, 'kernel_size': (4, 4)}
 ]
 
 # EVALUATION
