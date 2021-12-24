@@ -17,5 +17,5 @@ INITIAL_MEMORY_VERSION = args.memory_version
 run_folder = args.run_folder
 run_archive_folder = args.run_archive_folder
 
-run_folder = 'E:/C4/run/'
-run_archive_folder = 'E:/C4/run_archive/'
+# run_folder = 'E:/C4/run/'
+# run_archive_folder = 'E:/C4/run_archive/'
