@@ -169,10 +169,12 @@ class GameState(AbstractGameState):
 class Game(AbstractGame[GameState]):
     grid_shape = np.array([5, 5])
     input_shape = np.array([2, 5, 5])
+    action_size = 25
+    state_size = (2, 25)
+    name = 'connect4'
 
     def __init__(self):
-        super().__init__(1, GameState(np.zeros(25, dtype=np.int), 1), 25, 'metaSquares')
-        self.state_size = len(self.game_state.binary)
+        super().__init__(1, GameState(np.zeros(25, dtype=np.int), 1))
 
     def reset(self):
         self.game_state = GameState(np.zeros(25, dtype=np.int), 1)

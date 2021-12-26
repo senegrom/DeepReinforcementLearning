@@ -159,13 +159,12 @@ PARALLEL = False
 
 def reload_agent(player: AbstractAgent) -> AbstractAgent:
     if isinstance(player, Agent) and player.version > 0:
-        assert Game.action_size == player.action_size
-        assert Game.state_size == player.state_size
+        assert Game.action_size == player.action_size, f"{Game.action_size} != {player.action_size}"
+        assert Game.state_size == player.state_size, f"{Game.state_size} != {player.state_size}"
 
         player_nn = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, Game.input_shape, Game.action_size,
                                  config.HIDDEN_CNN_LAYERS)
-        player_network = player_nn.read(Game.name, player.version)
-        player_nn.model.set_weights(player_network.get_weights())
+        player_nn.model.set_weights(player.model.model.get_weights())
         return Agent(player.name, player.state_size, player.action_size, player.mct_ssimulations, player.cpuct,
                      player_nn, player.version)
     else:

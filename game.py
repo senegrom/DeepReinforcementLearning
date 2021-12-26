@@ -165,6 +165,7 @@ class Game(AbstractGame[GameState]):
     grid_shape = np.array([6, 7])
     input_shape = np.array([2, 6, 7])
     action_size = 42
+    state_size = (2, 42)
     name = 'connect4'
     identity_perm = np.array(
         [6, 5, 4, 3, 2, 1, 0, 13, 12, 11, 10, 9, 8, 7, 20, 19, 18, 17, 16, 15, 14, 27, 26, 25, 24, 23, 22, 21, 34, 33,
@@ -172,7 +173,6 @@ class Game(AbstractGame[GameState]):
 
     def __init__(self) -> None:
         super().__init__(current_player=1, game_state=GameState(np.zeros(42, dtype=np.int32), 1))
-        self.state_size = len(self.game_state.binary)
 
     def reset(self) -> GameState:
         self.game_state = GameState(np.zeros(42, dtype=np.int32), 1)
