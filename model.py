@@ -33,12 +33,12 @@ class Gen_Model:
                               batch_size=batch_size)
 
     def write(self, _, version):
-        self.model.save(f"{run_folder}/models/version{version:0>4}.h5")
+        self.model.save(run_folder / "models" / f"version{version:0>4}.h5")
 
     @staticmethod
     def read(game, version):
         return load_model(
-            f"{run_archive_folder}/{game}/models/version{version:0>4}.h5",
+            run_archive_folder / game / "models" / f"version{version:0>4}.h5",
             custom_objects={'softmax_cross_entropy_with_logits': softmax_cross_entropy_with_logits})
 
     def print_weight_averages(self):

@@ -36,7 +36,10 @@ def main():
         memory = Memory()
     else:
         print('LOADING MEMORY VERSION ' + str(initialise.INITIAL_MEMORY_VERSION) + '...')
-        with open(f"{run_archive_folder}/{env.name}/memory/memory{initialise.INITIAL_MEMORY_VERSION:0>4}.p", "rb") as f:
+
+        with (
+                run_archive_folder / env.name / "memory" / f"memory{initialise.INITIAL_MEMORY_VERSION:0>4}.p"
+        ).open("rb") as f:
             memory = pickle.load(f)
 
     # LOAD MODEL IF NECESSARY #
@@ -60,7 +63,7 @@ def main():
         best_nn.model.set_weights(current_nn.model.get_weights())
 
     # copy the config file to the run folder
-    copyfile('./config.py', run_folder + 'config.py')
+    copyfile('./config.py', run_folder / 'config.py')
     print('\n')
 
     # CREATE THE PLAYERS #
@@ -90,7 +93,7 @@ def main():
         memory.clear_stmemory()
 
         if iteration % 5 == 0:
-            with open(f"{run_folder}/memory/memory{iteration:0>4}.p", "wb") as f:
+            with (run_folder / "memory" / f"memory{iteration:0>4}.p").open("wb") as f:
                 pickle.dump(memory, f)
 
         if len(memory.ltmemory) >= 1000:
