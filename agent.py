@@ -54,12 +54,6 @@ class Agent(AbstractAgent):
 
         self.mcts = None
 
-        self.train_overall_loss = []
-        self.train_value_loss = []
-        self.train_policy_loss = []
-        self.val_overall_loss = []
-        self.val_value_loss = []
-        self.val_policy_loss = []
         self.version = version
 
     def simulate(self) -> None:
@@ -159,20 +153,33 @@ class Agent(AbstractAgent):
 
         return action, value
 
+    # def replay(self, ltmemory):
+    #     for _ in range(config.TRAINING_LOOPS):
+    #         minibatch = random.sample(ltmemory, min(config.BATCH_SIZE, len(ltmemory)))
+    #
+    #         training_states = np.array([self.model.convert_to_model_input(row['state']) for row in minibatch])
+    #         training_targets = {'value_head': np.array([row['value'] for row in minibatch]),
+    #                             'policy_head': np.array([row['AV'] for row in minibatch])}
+    #
+    #         fit = self.model.fit(training_states, training_targets, epochs=config.EPOCHS, verbose=1, validation_split=0,
+    #                              batch_size=32)
+    #
+    #         self.train_overall_loss.append(round(fit.history['loss'][config.EPOCHS - 1], 4))
+    #         self.train_value_loss.append(round(fit.history['value_head_loss'][config.EPOCHS - 1], 4))
+    #         self.train_policy_loss.append(round(fit.history['policy_head_loss'][config.EPOCHS - 1], 4))
+    #
+    #     print('\n')
+    #     self.model.print_weight_averages()
+
     def replay(self, ltmemory):
-        for _ in range(config.TRAINING_LOOPS):
-            minibatch = random.sample(ltmemory, min(config.BATCH_SIZE, len(ltmemory)))
+        minibatch = random.sample(ltmemory, min(config.TRAINING_SIZE, len(ltmemory)))
 
-            training_states = np.array([self.model.convert_to_model_input(row['state']) for row in minibatch])
-            training_targets = {'value_head': np.array([row['value'] for row in minibatch]),
-                                'policy_head': np.array([row['AV'] for row in minibatch])}
+        training_states = np.array([self.model.convert_to_model_input(row['state']) for row in minibatch])
+        training_targets = {'value_head': np.array([row['value'] for row in minibatch]),
+                            'policy_head': np.array([row['AV'] for row in minibatch])}
 
-            fit = self.model.fit(training_states, training_targets, epochs=config.EPOCHS, verbose=1, validation_split=0,
-                                 batch_size=32)
-
-            self.train_overall_loss.append(round(fit.history['loss'][config.EPOCHS - 1], 4))
-            self.train_value_loss.append(round(fit.history['value_head_loss'][config.EPOCHS - 1], 4))
-            self.train_policy_loss.append(round(fit.history['policy_head_loss'][config.EPOCHS - 1], 4))
+        self.model.fit(training_states, training_targets, epochs=config.EPOCHS, verbose=1, validation_split=0,
+                       batch_size=32)
 
         print('\n')
         self.model.print_weight_averages()
