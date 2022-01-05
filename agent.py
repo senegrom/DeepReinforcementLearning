@@ -32,7 +32,15 @@ class User(AbstractAgent):
     def act(self, state: GameState, tau):
         print("\n")
         print(state.render(None))
-        action = int(input('Enter your chosen action: '))
+        try:
+            action = int(input('Enter your chosen action: '))
+        except ValueError:
+            action = None
+        while action not in state.allowed_actions:
+            try:
+                action = int(input('Illegal. Enter your chosen action: '))
+            except ValueError:
+                action = None
         pi = np.zeros(self.action_size)
         pi[action] = 1
         value = None
