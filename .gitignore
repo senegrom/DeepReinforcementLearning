@@ -111,3 +111,5 @@ games/archive/
 .idea/
 .ipynb_checkpoints/
 stubs/
+*.log
+.DS_Store
